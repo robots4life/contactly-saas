@@ -1,38 +1,41 @@
-# create-svelte
+### 1.1 - SvelteKit Project Setup
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+https://courses.huntabyte.com/view/courses/modern-saas/1887088-module-1-project-setup/6175530-1-1-sveltekit-project-setup
 
-## Creating a project
+https://github.com/huntabyte/modern-saas/blob/starter-code/.prettierrc#L6 has `prettier-plugin-tailwindcss` but https://github.com/huntabyte/modern-saas/blob/starter-code/package.json does not have `prettier-plugin-tailwindcss`.
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+After `git clone --single-branch --branch starter-code https://github.com/huntabyte/modern-saas.git` going to `src/lib/index.ts` and writing some JS, on save, prettier does not format it.
 
 ```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+["INFO" - 5:15:35 PM] Formatting file:///.../modern-saas/src/lib/index.ts
+["INFO" - 5:15:35 PM] Using config file at '/.../modern-saas/.prettierrc'
 ```
 
-## Building
+Now, when I do `pnpm install prettier-plugin-tailwindcss` it complains about a version mismtach to `prettier`.
 
-To create a production version of your app:
+When I remove `prettier-plugin-tailwindcss` from `.prettierrc` like so, it works.
 
-```bash
-npm run build
+```json
+{
+	"useTabs": true,
+	"singleQuote": false,
+	"trailingComma": "none",
+	"printWidth": 100,
+	"plugins": ["prettier-plugin-svelte"],
+	"pluginSearchDirs": false,
+	"overrides": [
+		{
+			"files": "*.svelte",
+			"options": {
+				"parser": "svelte",
+				"svelteIndentScriptAndStyle": true,
+				"svelteStrictMode": false,
+				"svelteSortOrder": "scripts-markup-styles-options"
+			}
+		}
+	],
+	"bracketSameLine": true
+}
 ```
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+@huntabyte please tell me how to exactly install `pnpm install prettier-plugin-tailwindcss` with the exact version needed to that prettier and `prettier-plugin-svelte` as well **`prettier-plugin-tailwindcss`** work nicely together, thank you.
