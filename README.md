@@ -367,3 +367,35 @@ Applying migration 20230907075333_profiles.sql...
 Seeding data supabase/seed.sql...
 Finished supabase db reset on branch 1.4-Profiles-Table-And-RLS.
 ```
+
+### 2.1 Server-Side Environment
+
+`p i dotenv`
+
+```bash
+Already up to date
+Progress: resolved 445, reused 423, downloaded 0, added 0, done
+Done in 2.5s
+```
+
+**src/lib/server/env.ts**
+
+```ts
+import * as dotenv from "dotenv";
+dotenv.config();
+
+function getEnvironmentVariable(environmentVariable: string): string {
+	const validEnvironmentVariable = process.env[environmentVariable];
+	if (!validEnvironmentVariable) {
+		throw new Error(`Couldn't find environment variable: ${environmentVariable}`);
+	}
+	return validEnvironmentVariable;
+}
+
+export const ENV = {
+	PUBLIC_SUPABASE_ANON_KEY: getEnvironmentVariable("PUBLIC_SUPABASE_ANON_KEY"),
+	PUBLIC_SUPABASE_URL: getEnvironmentVariable("PUBLIC_SUPABASE_URL"),
+	SUPABASE_SERVICE_ROLE_KEY: getEnvironmentVariable("SUPABASE_SERVICE_ROLE_KEY"),
+	SUPABASE_DB_URL: getEnvironmentVariable("SUPABASE_DB_URL")
+};
+```
