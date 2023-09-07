@@ -548,3 +548,72 @@ export const load: LayoutServerLoad = async (event) => {
 ````
 
 <a href="https://supabase.com/docs/guides/auth/auth-helpers/sveltekit">https://supabase.com/docs/guides/auth/auth-helpers/sveltekit</a>
+
+### 2.4 - Client Side Supabase
+
+<a href="https://github.com/sveltejs/kit/discussions/6758">https://github.com/sveltejs/kit/discussions/6758</a>
+
+<img src="static/images/2.4/Screenshot_20230907_115832.png">
+
+**src/routes/+layout.ts**
+
+```ts
+import { createSupabaseLoadClient } from "@supabase/auth-helpers-sveltekit";
+import type { LayoutLoad } from "./$types";
+import type { Database } from "$lib/supabase-types";
+import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
+
+export const load: LayoutLoad = async ({ fetch, data, depends }) => {
+	depends("supabase:auth");
+
+	const supabase = createSupabaseLoadClient<Database>({
+		supabaseUrl: PUBLIC_SUPABASE_URL,
+		supabaseKey: PUBLIC_SUPABASE_ANON_KEY,
+		event: { fetch },
+		serverSession: data.session
+	});
+	const {
+		data: { session }
+	} = await supabase.auth.getSession();
+
+	return {
+		supabase,
+		session
+	};
+};
+```
+
+**src/routes/+layout.svelte**
+
+```ts
+<script lang="ts">
+	import "../app.css";
+	import { page } from "$app/stores";
+	import { Navbar, NavBrand, NavHamburger, NavUl, NavLi, Button } from "flowbite-svelte";
+	import { onMount } from "svelte";
+	import type { LayoutData } from "./$types";
+	import { invalidate } from "$app/navigation";
+
+	const navigation = [
+		{ label: "Home", href: "/" },
+		{ label: "Pricing", href: "/pricing" },
+		{ label: "Contacts", href: "/contacts" },
+		{ label: "Account", href: "/account" }
+	];
+
+	export let data: LayoutData;
+	$: ({ session, supabase } = data);
+
+	onMount(() => {
+		const {
+			data: { subscription }
+		} = supabase.auth.onAuthStateChange((event, _session) => {
+			if (_session?.expires_at !== session?.expires_at) {
+				invalidate("supabase:auth");
+			}
+		});
+
+		return () => subscription.unsubscribe();
+	});
+</script>
+```
