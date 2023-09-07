@@ -11,7 +11,7 @@ After `git clone --single-branch --branch starter-code https://github.com/huntab
 ["INFO" - 5:15:35 PM] Using config file at '/.../modern-saas/.prettierrc'
 ```
 
-Now, when I do `pnpm install prettier-plugin-tailwindcss` it complains about a version mismtach to `prettier`.
+Now, when I do `pnpm install prettier-plugin-tailwindcss` it complains about a version mismatch to `prettier`.
 
 When I remove `prettier-plugin-tailwindcss` from `.prettierrc` like so, it works.
 
@@ -460,3 +460,89 @@ Progress: resolved 22, reused 22, downloaded 0, added 22, done
 (Use `node --trace-warnings ...` to show where the warning was created)
 src/lib/supabase-types.ts 242ms
 ```
+
+### 2.3 - Server-Side Supabase
+
+**src/hooks.server.ts**
+
+```ts
+// src/hooks.server.ts
+import { ENV } from "$lib/server/env";
+import { createSupabaseServerClient } from "@supabase/auth-helpers-sveltekit";
+import type { Handle } from "@sveltejs/kit";
+
+export const handle: Handle = async ({ event, resolve }) => {
+	event.locals.supabase = createSupabaseServerClient({
+		supabaseUrl: ENV.PUBLIC_SUPABASE_URL,
+		supabaseKey: ENV.PUBLIC_SUPABASE_ANON_KEY,
+		event
+	});
+
+	event.locals.getSession = async () => {
+		const {
+			data: { session }
+		} = await event.locals.supabase.auth.getSession();
+		return session;
+	};
+
+	return resolve(event, {
+		/**
+		 * There´s an issue with `filterSerializedResponseHeaders` not working when using `sequence`
+		 *
+		 * https://github.com/sveltejs/kit/issues/8061
+		 */
+		filterSerializedResponseHeaders(name) {
+			return name === "content-range";
+		}
+	});
+};
+```
+
+locals object
+
+locals is an arbitrary object user to pass data between the handle hook and the rest of your server-side load functions, actions and endpoints
+
+with each request to the server a new locals object is created
+
+the locals object only persists for the duration of the request
+
+<img src="static/images/2.3/Screenshot_20230907_105434.png">
+
+<img src ="static/images/2.3/Screenshot_20230907_105757.png">
+
+fix ts errors for hooks.server.ts event
+
+**src/app.d.ts**
+
+```ts
+// app.d.ts
+import type { Session, SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "$lib/supabase-types.ts";
+
+declare global {
+	namespace App {
+		interface Locals {
+			supabase: SupabaseClient<Database>;
+			getSession(): Promise<Session | null>;
+		}
+		interface PageData {
+			session: Session | null;
+		}
+		// interface Error {}
+		// interface Platform {}
+	}
+}
+export {};
+```
+
+**src/routes/+layout.server.ts**
+
+````ts
+import type { LayoutServerLoad } from "./$types";
+
+export const load: LayoutServerLoad = async (event) => {
+  return {
+    session: await event.locals.getSession(),
+  };
+};```
+````
