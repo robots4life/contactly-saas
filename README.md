@@ -399,3 +399,64 @@ export const ENV = {
 	SUPABASE_DB_URL: getEnvironmentVariable("SUPABASE_DB_URL")
 };
 ```
+
+### 2.2 - Install Supabase SDKs & Generate Types
+
+`p i @supabase/supabase-js @supabase/auth-helpers-sveltekit`
+
+```bash
+Already up to date
+Progress: resolved 445, reused 423, downloaded 0, added 0, done
+Done in 1.8s
+```
+
+`p supabase gen types typescript --local > src/lib/supabase-types.ts`
+
+```bash
+v0.60.7: Pulling from supabase/postgres-meta
+8740c948ffd4: Pull complete
+29fd6e358874: Pull complete
+b76523dd8e3e: Pull complete
+22a477c2ec9b: Pull complete
+9b4ab2388925: Pull complete
+949b60406ef6: Pull complete
+5e1c3eb6de2b: Pull complete
+0a816fedf16c: Pull complete
+455915913751: Pull complete
+Digest: sha256:c816ae12c3ca785934cf19935c91c08edea6af1488c290fe3b34096e17e23812
+Status: Downloaded newer image for public.ecr.aws/supabase/postgres-meta:v0.60.7
+(node:1) ExperimentalWarning: Importing JSON modules is an experimental feature. This feature could change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+```
+
+**src/lib/supabase-types.ts**
+
+again
+
+`pnpx`
+
+becomes
+
+`pnpm dlx`
+
+so in the script change it to
+
+```json
+"gen:types": "pnpm dlx supabase gen types typescript --local > src/lib/supabase-types.ts && prettier --write src/lib/supabase-types.ts"
+```
+
+`p gen:types`
+
+```bash
+> modern-saas@0.0.1 gen:types /media/user/d/WWW/modern-saas
+> pnpm dlx supabase gen types typescript --local > src/lib/supabase-types.ts && prettier --write src/lib/supabase-types.ts
+
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Progress: resolved 19, reused 19, downloaded 0, added 0
+Packages: +22
+++++++++++++++++++++++
+Progress: resolved 22, reused 22, downloaded 0, added 22, done
+(node:1) ExperimentalWarning: Importing JSON modules is an experimental feature. This feature could change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+src/lib/supabase-types.ts 242ms
+```
