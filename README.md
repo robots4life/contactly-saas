@@ -273,3 +273,97 @@ service_role key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZ
 ```
 
 <a href="http://localhost:54323/project/default">http://localhost:54323/project/default</a>
+
+### 1.4 - Profiles Table & RLS
+
+`pnpx supabase migration new profiles`
+
+becomes
+
+`px supabase migration new profiles`
+
+because of
+
+`zsh: command not found: pnpx`
+
+<a href="https://stackoverflow.com/a/70266473">https://stackoverflow.com/a/70266473</a>
+
+<a href="https://pnpm.io/cli/dlx">https://pnpm.io/cli/dlx</a>
+
+in .zshrc
+
+`alias px="pnpm dlx"`
+
+```bash
+Packages: +22
+++++++++++++++++++++++
+Progress: resolved 22, reused 22, downloaded 0, added 22, done
+Created new migration at supabase/migrations/20230907075333_profiles.sql.
+```
+
+install VS Code extension
+
+"uniquevision.vscode-plpgsql-lsp"
+
+"bradymholt.pgformatter"
+
+user & workbench settings
+
+```json
+  // PGFormatter
+  "pgFormatter.functionCase": "lowercase",
+  "pgFormatter.keywordCase": "lowercase"
+```
+
+**supabase/migrations/20230907075333_profiles.sql**
+
+```sql
+create table public.profiles(
+  id uuid unique references auth.users on delete cascade,
+  full_name text,
+  updated_at timestamp with time zone default now() not null,
+  created_at timestamp with time zone default now() not null,
+  primary key (id)
+);
+
+alter table public.profiles enable row level security;
+
+create policy "Users can view own profile" on profiles
+  for select to authenticated
+    using (auth.uid() = id);
+
+create policy "Users can update own profile" on profiles
+  for update to authenticated
+    using (auth.uid() = id);
+
+create or replace function public.handle_new_user()
+  returns trigger
+  as $$
+begin
+  insert into public.profiles(id, full_name)
+    values(new.id, new.raw_user_meta_data ->> 'full_name');
+  return new;
+end;
+$$
+language plpgsql
+security definer;
+
+create trigger on_auth_user_created
+  after insert on auth.users for each row
+  execute procedure public.handle_new_user();
+```
+
+<a href="https://supabase.com/docs/guides/auth/managing-user-data#using-triggers">https://supabase.com/docs/guides/auth/managing-user-data#using-triggers</a>
+
+`px supabase db reset`
+
+```bash
+Packages: +22
+++++++++++++++++++++++
+Progress: resolved 22, reused 22, downloaded 0, added 22, done
+Resetting local database...
+Restarting containers...
+Applying migration 20230907075333_profiles.sql...
+Seeding data supabase/seed.sql...
+Finished supabase db reset on branch 1.4-Profiles-Table-And-RLS.
+```
