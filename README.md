@@ -546,3 +546,5 @@ export const load: LayoutServerLoad = async (event) => {
   };
 };```
 ````
+
+<a href="https://supabase.com/docs/guides/auth/auth-helpers/sveltekit">https://supabase.com/docs/guides/auth/auth-helpers/sveltekit</a>
